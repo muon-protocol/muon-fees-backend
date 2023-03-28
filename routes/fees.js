@@ -10,7 +10,7 @@ const Web3 = require("web3");
 const web3 = new Web3(process.env.WEB3_PROVIDER);
 
 const amount = web3.utils.toWei("1");
-const timestampWindow = 5 * 60; // 5 minutes
+const timestampWindow = 5 * 60 * 1000; // 5 minutes
 
 // TODO: load from contract
 const REQUESTS_PER_WALLET = 10;
@@ -28,7 +28,7 @@ module.exports = (app) => {
     let { request, spender, appId, sign, timestamp } = req.body;
 
     // validate timestamp
-    let now = Math.floor(Date.now() / 1000);
+    let now = Date.now();
     if (now - timestamp > timestampWindow || now - timestamp < 0) {
       return res.send({
         success: false,

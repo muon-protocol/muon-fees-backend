@@ -12,6 +12,16 @@ const web3 = new Web3(process.env.WEB3_PROVIDER);
 const amount = web3.utils.toWei("1");
 const timestampWindow = 5 * 60; // 5 minutes
 
+// TODO: load from contract
+const REQUESTS_PER_WALLET = 10;
+
+const hasEnoughFee = async (spender) => {
+  let collection = await db.get("requests");
+  let reqs = await collection.find({spender: spender}).toArray();
+  console.log(reqs);
+  return reqs.length <= REQUESTS_PER_WALLET;
+}
+
 // TODO: handle non-EVM chains
 module.exports = (app) => {
   app.post(`/sign`, async function(req, res, next) {
@@ -45,11 +55,21 @@ module.exports = (app) => {
       { type: "uint256", value: amount.toString() }
     );
 
-    //TODO: check limits
+    // check fee balance
+    let checkBalance = await hasEnoughFee(spender);
+    if(!checkBalance){
+      return res.res.send({
+        success: false,
+        error: "Insufficient fee amount",
+      }).status(400);
+    }
 
     // save into the db
     let data = {
-      _id: hash, // hash is unique
+      // user hash should be unique.
+      // each user can send one request per second to
+      // a specific app
+      _id: userHash,
       reqId: request,
       //TODO: create Mongo index for spender
       spender: spender.toLowerCase(),

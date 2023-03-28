@@ -14,7 +14,7 @@ const timestampWindow = 5 * 60; // 5 minutes
 
 // TODO: handle non-EVM chains
 module.exports = (app) => {
-  app.post(`/sign`, function(req, res, next) {
+  app.post(`/sign`, async function(req, res, next) {
     let { request, spender, appId, sign, timestamp } = req.body;
 
     // validate timestamp
@@ -58,7 +58,7 @@ module.exports = (app) => {
       appId
     };
     let collection = await db.get("requests");
-    console.log(`Saving ${data.reqId}`)
+    console.log(`Saving ${data._id}`)
     await collection.insertOne(data);
 
     res.send({

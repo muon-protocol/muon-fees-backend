@@ -51,7 +51,7 @@ module.exports = (app) => {
     let data = {
       _id: request, // reqId is unique
       //TODO: create Mongo index for spender
-      spender: toLowerCase(spender),
+      spender: spender.toLowerCase(),
       amount: amount.toString(),
       sign,
       timestamp,

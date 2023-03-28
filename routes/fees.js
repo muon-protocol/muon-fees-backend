@@ -15,7 +15,6 @@ const timestampWindow = 5 * 60; // 5 minutes
 // TODO: handle non-EVM chains
 module.exports = (app) => {
   app.post(`/sign`, function(req, res, next) {
-    // console.log(req.body, req.data, "body");
     let { request, spender, appId, sign, timestamp } = req.body;
 
     // validate timestamp
@@ -46,7 +45,21 @@ module.exports = (app) => {
       { type: "uint256", value: amount.toString() }
     );
 
-    // TODO: save into db
+    //TODO: check limits
+
+    // save into the db
+    let data = {
+      _id: request, // reqId is unique
+      //TODO: create Mongo index for spender
+      spender: toLowerCase(spender),
+      amount: amount.toString(),
+      sign,
+      timestamp,
+      appId
+    };
+    let collection = await db.get("requests");
+    console.log(`Saving ${data.reqId}`)
+    await collection.insertOne(data);
 
     res.send({
       sign: web3.eth.accounts.sign(hash, process.env.SIGNER_PK).signature,

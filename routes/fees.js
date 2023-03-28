@@ -17,7 +17,7 @@ const REQUESTS_PER_WALLET = 10;
 
 const hasEnoughFee = async (spender) => {
   let collection = await db.get("requests");
-  let reqs = await collection.find({spender: spender}).toArray();
+  let reqs = await collection.find({spender: spender.toLowerCase()}).toArray();
   console.log(reqs);
   return reqs.length <= REQUESTS_PER_WALLET;
 }

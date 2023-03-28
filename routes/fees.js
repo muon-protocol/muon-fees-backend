@@ -58,7 +58,7 @@ module.exports = (app) => {
     // check fee balance
     let checkBalance = await hasEnoughFee(spender);
     if(!checkBalance){
-      return res.res.send({
+      return res.send({
         success: false,
         error: "Insufficient fee amount",
       }).status(400);

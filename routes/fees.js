@@ -2,7 +2,8 @@ require("dotenv").config();
 const db = require("../utils/db");
 const sha3 = require("../utils/sha3").muonSha3;
 const NodeCache = require("node-cache");
-
+const MuonFeeABI = require('../config/abis/MuonFeeUpgradeable.json');
+const MuonFeeAddress = process.env.MUON_FEE_ADDRESS;
 // cache for 1 minute
 const cache = new NodeCache({ stdTTL: 60 });
 
@@ -15,11 +16,29 @@ const timestampWindow = 5 * 60 * 1000; // 5 minutes
 // TODO: load from contract
 const REQUESTS_PER_WALLET = 10;
 
-const hasEnoughFee = async (spender) => {
+const MuonFeeContract = new web3.eth.Contract(
+  MuonFeeABI, MuonFeeAddress);
+
+const chainBalance = async(wallet) => {
+  let user = MuonFeeContract.methods.users(wallet).balance;
+}
+
+const hasEnoughFee = async (spender, app) => {
   let collection = await db.get("requests");
   let reqs = await collection.find({spender: spender.toLowerCase()}).toArray();
   console.log(reqs);
-  return reqs.length <= REQUESTS_PER_WALLET;
+
+  // we assume that users can't withdraw the fees
+  // and cached balance is always valid
+  let cacheKey = `balance:${spender}`;
+  let cachedBalance = app.redis.get(cacheKey);
+  if(cachedBalance && reqs.length <= cachedBalance){
+    return true;
+  }
+
+  let chainBalance = await getChainBalance(spender);
+  app.redis.set(cacheKey, chainBalance);
+  return reqs.length <= chainBalance;
 }
 
 // TODO: handle non-EVM chains
@@ -56,7 +75,7 @@ module.exports = (app) => {
     );
 
     // check fee balance
-    let checkBalance = await hasEnoughFee(spender);
+    let checkBalance = await hasEnoughFee(spender, app);
     if(!checkBalance){
       return res.send({
         success: false,

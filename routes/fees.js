@@ -3,7 +3,7 @@ const db = require("../utils/db");
 const sha3 = require("../utils/sha3").muonSha3;
 const NodeCache = require("node-cache");
 const MuonFeeABI = require('../config/abis/MuonFeeUpgradeable.json');
-const MuonFeeAddress = process.env.MUON_FEE_ADDRESS;
+const MuonFeeAddress = process.env.MUON_FEE_CONTRACT;
 // cache for 1 minute
 const cache = new NodeCache({ stdTTL: 60 });
 
@@ -19,26 +19,33 @@ const REQUESTS_PER_WALLET = 10;
 const MuonFeeContract = new web3.eth.Contract(
   MuonFeeABI, MuonFeeAddress);
 
-const chainBalance = async(wallet) => {
-  let user = MuonFeeContract.methods.users(wallet).balance;
+const getChainBalance = async(wallet) => {
+  let user = await MuonFeeContract.methods.users(wallet).call();
+  return user;
 }
 
 const hasEnoughFee = async (spender, app) => {
   let collection = await db.get("requests");
-  let reqs = await collection.find({spender: spender.toLowerCase()}).toArray();
-  console.log(reqs);
+  let reqs = await collection.count({spender: spender.toLowerCase()});
+  console.log(reqs, "reqs");
+
+  //TODO: use BN for calculations
+  let usedFees = amount * reqs;
+  console.log(usedFees, "usedFees")
 
   // we assume that users can't withdraw the fees
   // and cached balance is always valid
   let cacheKey = `balance:${spender}`;
-  let cachedBalance = app.redis.get(cacheKey);
-  if(cachedBalance && reqs.length <= cachedBalance){
+  let cachedBalance = await app.redis.get(cacheKey);
+  console.log('cachedBalance, usedFees', cachedBalance, usedFees);
+  if(cachedBalance && usedFees < cachedBalance){
     return true;
   }
 
   let chainBalance = await getChainBalance(spender);
-  app.redis.set(cacheKey, chainBalance);
-  return reqs.length <= chainBalance;
+
+  await app.redis.set(cacheKey, chainBalance);
+  return usedFees < chainBalance;
 }
 
 // TODO: handle non-EVM chains
@@ -56,6 +63,7 @@ module.exports = (app) => {
     }
 
     // verify sign
+    console.log(spender, timestamp, appId);
     let userHash = sha3(
       {type: "address", value: spender},
       {type: "uint64", value: timestamp},

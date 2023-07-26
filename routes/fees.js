@@ -1,5 +1,6 @@
 require("dotenv").config();
 const db = require("../utils/db");
+const sigUtil = require("@metamask/eth-sig-util");
 const sha3 = require("../utils/sha3").muonSha3;
 const NodeCache = require("node-cache");
 const MuonFeeABI = require('../config/abis/MuonFeeUpgradeable.json');
@@ -52,8 +53,10 @@ const hasEnoughFee = async (spender, app) => {
 module.exports = (app) => {
   app.post(`/sign`, async function(req, res, next) {
     let { request, spender, appId, sign, timestamp } = req.body;
+    spender = spender.toLowerCase();
 
-    // validate timestamp
+
+      // validate timestamp
     let now = Date.now();
     if (now - timestamp > timestampWindow || now - timestamp < 0) {
       return res.send({
@@ -64,13 +67,29 @@ module.exports = (app) => {
 
     // verify sign
     console.log(spender, timestamp, appId);
-    let userHash = sha3(
-      {type: "address", value: spender},
-      {type: "uint64", value: timestamp},
-      {type: "uint256", value: appId}
-    );
-    let signerUser = web3.eth.accounts.recover(userHash, sign);
-    if(signerUser != spender){
+
+    const eip712TypedData = {
+        types: {
+            EIP712Domain: [{name: 'name', type: 'string'}],
+            Message: [
+                {type: 'address', name: 'address'},
+                {type: 'uint64', name: 'timestamp'},
+                {type: 'uint256', name: 'appId'},
+            ]
+        },
+        domain: {name: 'MRC20 Presale'},
+        primaryType: 'Message',
+        message: {address: spender, timestamp: timestamp, appId}
+    };
+    let recoveredAddress = sigUtil.recoverTypedSignature({
+        data: eip712TypedData,
+        signature: sign,
+        version: sigUtil.SignTypedDataVersion.V4
+    });
+    recoveredAddress = recoveredAddress.toLowerCase();
+
+
+    if (recoveredAddress != spender) {
       return res.send({
         success: false,
         error: "Invalid Signature.",

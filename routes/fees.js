@@ -77,7 +77,7 @@ module.exports = (app) => {
                 {type: 'uint256', name: 'appId'},
             ]
         },
-        domain: {name: 'MRC20 Presale'},
+        domain: {name: 'Muonize'},
         primaryType: 'Message',
         message: {address: spender, timestamp: timestamp, appId}
     };

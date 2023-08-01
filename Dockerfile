@@ -6,8 +6,8 @@ WORKDIR /usr/src/app
 
 COPY . /usr/src/app
 
-#RUN npm install
+RUN npm install
 
 EXPOSE 3002
 
-# CMD npm start
+CMD npm start

@@ -18,4 +18,3 @@ services:
       - TZ=Asia/Tehran
       - NODE_ENV=production
       - BUILD_MODE=production
-    command: node server.js

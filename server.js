@@ -3,7 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const {createClient} = require("redis");
 
-const PORT = process.env.SERVER_PORT || 3000;
+const PORT = process.env.SERVER_PORT || 3002;
 
 const app = express();
 app.use(bodyParser.json());

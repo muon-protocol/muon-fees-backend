@@ -143,8 +143,9 @@ module.exports = (app) => {
             success: true,
         });
     });
-    app.all(`/get-used-balance`, asyncErrorHandler(async function (req, res, next) {
+    app.post(`/get-used-balance`, asyncErrorHandler(async function (req, res, next) {
         let spender = req.body.spender;
+        console.log("get-used-balance", spender);
         if (!spender)
             return res.status(400).send({success: false, message: "Please send spender"});
         let usedBalance = await BalanceController.getUsedBalance(spender);

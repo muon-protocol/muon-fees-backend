@@ -143,7 +143,8 @@ module.exports = (app) => {
             success: true,
         });
     });
-    app.post(`/get-used-balance`, asyncErrorHandler(async function (req, res, next) {
+    app.all(`/get-used-balance`, asyncErrorHandler(async function (req, res, next) {
+        console.log(req);
         let spender = req.body.spender;
         console.log("get-used-balance", spender);
         if (!spender)

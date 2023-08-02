@@ -2,8 +2,10 @@ require("dotenv").config();
 const db = require("../utils/db");
 const sigUtil = require("@metamask/eth-sig-util");
 const sha3 = require("../utils/sha3").muonSha3;
+const asyncErrorHandler = require("../utils/errorHandler").asyncErrorHandler;
 const NodeCache = require("node-cache");
 const MuonFeeABI = require('../config/abis/MuonFeeUpgradeable.json');
+const BalanceController = require("../src/BalanceController");
 const MuonFeeAddress = process.env.MUON_FEE_CONTRACT;
 // cache for 1 minute
 const cache = new NodeCache({stdTTL: 60});
@@ -141,4 +143,11 @@ module.exports = (app) => {
             success: true,
         });
     });
+    app.all(`/get-used-balance`, asyncErrorHandler(async function (req, res, next) {
+        let spender = req.body.spender;
+        if (!spender)
+            return res.status(400).send({success: false, message: "Please send spender"});
+        let usedBalance = await BalanceController.getUsedBalance(spender);
+        return res.send({success: true, usedBalance});
+    }));
 };

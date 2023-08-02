@@ -16,6 +16,15 @@ app.redis = createClient({url: process.env.REDIS_URL});
 })();
 
 app.use(express.json());
+
+const errorHandler = (err, req, res, next) => {
+    console.error(err);
+    const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+    res.status(statusCode).json({ error: err.message });
+};
+app.use(errorHandler);
+
+
 app.get("/", (req, res) => {
   res.json({ message: "Muon Fees API" });
 });

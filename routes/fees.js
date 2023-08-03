@@ -160,7 +160,7 @@ module.exports = (app) => {
         let collection = await db.get("requests");
         let requests = await collection.find({}).limit(20).toArray();
         console.log("requests",requests);
-        res.set(requests);
+        res.send(requests);
     }));
 
 };

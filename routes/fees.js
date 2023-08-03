@@ -98,6 +98,15 @@ module.exports = (app) => {
             }).status(400);
         }
 
+        let requestHash = sha3(
+            {type: "address", value: spender},
+            {type: "uint64", value: timestamp},
+            {type: "uint256", value: appId}
+        );
+        console.log("requestHash", requestHash);
+
+
+
         let hash = sha3(
             {type: "uint256", value: request},
             {type: "uint256", value: amount.toString()}
@@ -112,19 +121,14 @@ module.exports = (app) => {
             }).status(400);
         }
 
-        let userHash = sha3(
-            {type: "address", value: spender},
-            {type: "uint64", value: timestamp},
-            {type: "uint256", value: appId}
-        );
-        console.log("userHash", userHash);
+
 
         // save into the db
         let data = {
             // user hash should be unique.
             // each user can send one request per second to
             // a specific app
-            _id: userHash,
+            _id: requestHash,
             reqId: request,
             //TODO: create Mongo index for spender
             spender: spender.toLowerCase(),
@@ -152,4 +156,10 @@ module.exports = (app) => {
         let usedBalance = await BalanceController.getUsedBalance(spender);
         return res.send({success: true, usedBalance});
     }));
+    app.all(`/test`, asyncErrorHandler(async function (req, res, next) {
+        let collection = await db.get("requests");
+        let requests = await collection.find({}).toArray();
+        res.set(requests);
+    }));
+
 };

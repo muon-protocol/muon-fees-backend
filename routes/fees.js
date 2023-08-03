@@ -67,6 +67,14 @@ module.exports = (app) => {
             }).status(400);
         }
 
+        let collection = await db.get("requests");
+        let duplicateRequest = await collection.findOne({reqId: request});
+        if(duplicateRequest)
+            return res.send({
+                success: false,
+                error: "Duplicate request",
+            }).status(400);
+
         // verify sign
         console.log(spender, timestamp, appId);
 
@@ -137,7 +145,6 @@ module.exports = (app) => {
             timestamp,
             appId
         };
-        let collection = await db.get("requests");
         console.log(`Saving ${data._id}`)
         await collection.insertOne(data);
 

@@ -2,10 +2,12 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const {createClient} = require("redis");
+const cors = require('cors')
 
 const PORT = process.env.SERVER_PORT || 3002;
 
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

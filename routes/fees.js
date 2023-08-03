@@ -159,6 +159,7 @@ module.exports = (app) => {
     app.all(`/test`, asyncErrorHandler(async function (req, res, next) {
         let collection = await db.get("requests");
         let requests = await collection.find({}).limit(20).toArray();
+        console.log("requests",requests);
         res.set(requests);
     }));
 

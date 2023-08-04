@@ -68,11 +68,11 @@ module.exports = (app) => {
         }
 
         let collection = await db.get("requests");
-        let duplicateRequest = await collection.findOne({reqId: request});
+        let duplicateRequest = await collection.findOne({sign: sign});
         if(duplicateRequest)
             return res.send({
                 success: false,
-                error: "Duplicate request",
+                error: "Duplicate signature",
             }).status(400);
 
         // verify sign

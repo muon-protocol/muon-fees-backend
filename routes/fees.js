@@ -30,11 +30,9 @@ const getChainBalance = async (wallet) => {
 const hasEnoughFee = async (spender, app) => {
     let collection = await db.get("requests");
     let reqs = await collection.count({spender: spender.toLowerCase()});
-    console.log(reqs, "reqs");
 
     //TODO: use BN for calculations
     let usedFees = amount * reqs;
-    console.log(usedFees, "usedFees")
 
     // we assume that users can't withdraw the fees
     // and cached balance is always valid
@@ -76,7 +74,6 @@ module.exports = (app) => {
             }).status(400);
 
         // verify sign
-        console.log(spender, timestamp, appId);
 
         const eip712TypedData = {
             types: {
@@ -111,7 +108,6 @@ module.exports = (app) => {
             {type: "uint64", value: timestamp},
             {type: "uint256", value: appId}
         );
-        console.log("requestHash", requestHash);
 
 
 
@@ -145,7 +141,6 @@ module.exports = (app) => {
             timestamp,
             appId
         };
-        console.log(`Saving ${data._id}`)
         await collection.insertOne(data);
 
         res.send({
@@ -155,19 +150,12 @@ module.exports = (app) => {
         });
     });
     app.all(`/get-used-balance`, asyncErrorHandler(async function (req, res, next) {
-        console.log(req);
         let spender = req.body.spender;
         console.log("get-used-balance", spender);
         if (!spender)
             return res.status(400).send({success: false, message: "Please send spender"});
         let usedBalance = await BalanceController.getUsedBalance(spender);
         return res.send({success: true, usedBalance});
-    }));
-    app.all(`/test`, asyncErrorHandler(async function (req, res, next) {
-        let collection = await db.get("requests");
-        let requests = await collection.find({}).limit(20).toArray();
-        console.log("requests",requests);
-        res.send(requests);
     }));
 
 };

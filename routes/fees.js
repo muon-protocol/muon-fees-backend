@@ -2,8 +2,10 @@ require("dotenv").config();
 const db = require("../utils/db");
 const sigUtil = require("@metamask/eth-sig-util");
 const sha3 = require("../utils/sha3").muonSha3;
+const asyncErrorHandler = require("../utils/errorHandler").asyncErrorHandler;
 const NodeCache = require("node-cache");
 const MuonFeeABI = require('../config/abis/MuonFeeUpgradeable.json');
+const BalanceController = require("../src/BalanceController");
 const MuonFeeAddress = process.env.MUON_FEE_CONTRACT;
 // cache for 1 minute
 const cache = new NodeCache({stdTTL: 60});
@@ -28,11 +30,9 @@ const getChainBalance = async (wallet) => {
 const hasEnoughFee = async (spender, app) => {
     let collection = await db.get("requests");
     let reqs = await collection.count({spender: spender.toLowerCase()});
-    console.log(reqs, "reqs");
 
     //TODO: use BN for calculations
     let usedFees = amount * reqs;
-    console.log(usedFees, "usedFees")
 
     // we assume that users can't withdraw the fees
     // and cached balance is always valid
@@ -65,8 +65,15 @@ module.exports = (app) => {
             }).status(400);
         }
 
+        let collection = await db.get("requests");
+        let duplicateRequest = await collection.findOne({sign: sign});
+        if(duplicateRequest)
+            return res.send({
+                success: false,
+                error: "Duplicate signature",
+            }).status(400);
+
         // verify sign
-        console.log(spender, timestamp, appId);
 
         const eip712TypedData = {
             types: {
@@ -96,6 +103,14 @@ module.exports = (app) => {
             }).status(400);
         }
 
+        let requestHash = sha3(
+            {type: "address", value: spender},
+            {type: "uint64", value: timestamp},
+            {type: "uint256", value: appId}
+        );
+
+
+
         let hash = sha3(
             {type: "uint256", value: request},
             {type: "uint256", value: amount.toString()}
@@ -110,19 +125,14 @@ module.exports = (app) => {
             }).status(400);
         }
 
-        let userHash = sha3(
-            {type: "address", value: spender},
-            {type: "uint64", value: timestamp},
-            {type: "uint256", value: appId}
-        );
-        console.log("userHash", userHash);
+
 
         // save into the db
         let data = {
             // user hash should be unique.
             // each user can send one request per second to
             // a specific app
-            _id: userHash,
+            _id: requestHash,
             reqId: request,
             //TODO: create Mongo index for spender
             spender: spender.toLowerCase(),
@@ -131,8 +141,6 @@ module.exports = (app) => {
             timestamp,
             appId
         };
-        let collection = await db.get("requests");
-        console.log(`Saving ${data._id}`)
         await collection.insertOne(data);
 
         res.send({
@@ -141,4 +149,13 @@ module.exports = (app) => {
             success: true,
         });
     });
+    app.all(`/get-used-balance`, asyncErrorHandler(async function (req, res, next) {
+        let spender = req.body.spender;
+        console.log("get-used-balance", spender);
+        if (!spender)
+            return res.status(400).send({success: false, message: "Please send spender"});
+        let usedBalance = await BalanceController.getUsedBalance(spender);
+        return res.send({success: true, usedBalance});
+    }));
+
 };

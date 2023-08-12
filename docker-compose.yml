@@ -1,0 +1,20 @@
+version: '3.4'
+services:
+  muon-discord-bot:
+    container_name: muon-fees-backend
+    image: muon-fees-backend
+    restart: always
+    build:
+      context: .
+      network: host
+
+    network_mode: host
+
+    ports:
+      - 3002:3002
+    env_file:
+      - ./.env
+    environment:
+      - TZ=Asia/Tehran
+      - NODE_ENV=production
+      - BUILD_MODE=production

@@ -1,6 +1,15 @@
 # MUON fees backend
 
-This project manages the fee computations for requests on the MUON network. 
+This project manages the fee computations for requests on the MUON network.
+
+##How it works
+A group of trusted entities is carefully chosen to operate this fee server and 
+oversee the fee processing. 
+These entities run the "fees backend" project on dedicated servers, 
+and their addresses are included as fee service providers within the 
+Muon Core's configuration. 
+
+The rationale behind having multiple servers, rather than a single one, is to enhance trustworthiness and reduce reliance on a single endpoint. 
 
 ## Installation
 

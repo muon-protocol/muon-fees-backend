@@ -1,6 +1,6 @@
 version: '3.4'
 services:
-  muon-discord-bot:
+  muon-fees-backend:
     container_name: muon-fees-backend
     image: muon-fees-backend
     restart: always
@@ -15,6 +15,5 @@ services:
     env_file:
       - ./.env
     environment:
-      - TZ=Asia/Tehran
       - NODE_ENV=production
       - BUILD_MODE=production

@@ -1,0 +1,12 @@
+[
+  {
+    "contract": "0x4c00a64addb992a352e5147b791b310b17432a2b",
+    "chainId": 97,
+    "rpc": "https://rpc.ankr.com/bsc_testnet_chapel"
+  },
+  {
+    "contract": "0x8b53F27a15FAD2f0126CC8aD5224fb22AB663Bd4",
+    "chainId": 97,
+    "rpc": "https://rpc.ankr.com/bsc_testnet_chapel"
+  }
+]

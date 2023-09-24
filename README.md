@@ -9,7 +9,9 @@ These entities run the "fees backend" project on dedicated servers,
 and their addresses are included as fee service providers within the 
 Muon Core's configuration. 
 
-The rationale behind having multiple servers, rather than a single one, is to enhance trustworthiness and reduce reliance on a single endpoint. 
+The rationale behind having multiple servers, rather than a single one, is to enhance trustworthiness and reduce reliance on a single endpoint.
+
+Users can deposit fees into different contracts on various blockchain networks. The list of all contracts that need to be checked to determine the total balance of a user is defined in the URL 'config/contracts.json'. 
 
 ## Installation
 
@@ -18,6 +20,7 @@ Make a copy of the `.env.example` file and rename it to `.env`.
 
 In the `.env` file,
 Set the MongoDB connection in the `MONGODB_CS` variable and establish the appropriate Redis connection by providing the `REDIS_URL`. 
+
 
 Then place the signer's private key in the `SIGNER_PK` field and its corresponding public key in the `SIGNER` field.
 

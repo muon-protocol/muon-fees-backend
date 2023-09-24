@@ -24,7 +24,8 @@ const REQUESTS_PER_WALLET = 10;
 let feeContracts = [];
 for (let i = 0; i < configContracts.length; i++) {
     let configContract = configContracts[i];
-    feeContracts.push(new web3.eth.Contract(MuonFeeABI, configContract.address));
+    const web3Obj = new Web3(configContract.rpc);
+    feeContracts.push(new web3Obj.eth.Contract(MuonFeeABI, configContract.contract));
 }
 
 

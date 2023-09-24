@@ -48,6 +48,7 @@ const getChainBalance = async (wallet) => {
 };
 
 
+
 const hasEnoughFee = async (spender, app) => {
     let collection = await db.get("requests");
     let reqs = await collection.count({spender: spender.toLowerCase()});

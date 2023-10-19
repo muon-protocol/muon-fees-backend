@@ -48,7 +48,6 @@ const getChainBalance = async (wallet) => {
 };
 
 
-
 const hasEnoughFee = async (spender, app) => {
     let collection = await db.get("requests");
     let reqs = await collection.count({spender: spender.toLowerCase()});
@@ -175,6 +174,10 @@ module.exports = (app) => {
             return res.status(400).send({success: false, message: "Please send spender"});
         let usedBalance = await BalanceController.getUsedBalance(spender);
         return res.send({success: true, usedBalance});
+    }));
+
+    app.all(`/get-contracts`, asyncErrorHandler(async function (req, res, next) {
+        return res.send({success: true, contracts: configContracts});
     }));
 
 };

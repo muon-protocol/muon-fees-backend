@@ -5,7 +5,7 @@ const sha3 = require("../utils/sha3").muonSha3;
 const asyncErrorHandler = require("../utils/errorHandler").asyncErrorHandler;
 const NodeCache = require("node-cache");
 const MuonFeeABI = require('../config/abis/MuonFeeUpgradeable.json');
-const configContracts = require("../config/contracts.json");
+
 const BalanceController = require("../src/BalanceController");
 const BN = require("bn.js");
 // cache for 1 minute
@@ -16,6 +16,11 @@ const web3 = new Web3(process.env.WEB3_PROVIDER);
 
 const amount = new BN(web3.utils.toWei("1"));
 const timestampWindow = 5 * 60 * 1000; // 5 minutes
+
+let contractsFile = `../config/contracts.json`;
+if (process.env.NETWORK)
+    contractsFile = `../config/contracts-${process.env.NETWORK}.json`;
+const configContracts = require(contractsFile);
 
 // TODO: load from contract
 const REQUESTS_PER_WALLET = 10;

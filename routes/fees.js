@@ -17,7 +17,7 @@ const web3 = new Web3(process.env.WEB3_PROVIDER);
 const amount = new BN(web3.utils.toWei("1"));
 const timestampWindow = 5 * 60 * 1000; // 5 minutes
 
-const configContracts = require(`../config/contracts-${process.env.NETWORK||'default'}.json`);
+const configContracts = require(`../config/contracts-${process.env.NETWORK || 'default'}.json`);
 
 // TODO: load from contract
 const REQUESTS_PER_WALLET = 10;
